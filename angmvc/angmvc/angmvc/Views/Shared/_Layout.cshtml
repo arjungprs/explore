@@ -1,0 +1,219 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    <script src="~/Scripts/angular.js"></script>
+    <script src="~/Scripts/angular-route.js"></script>
+
+    <script>
+        var myApp = angular.module("myApp", ['ngRoute']);
+
+        myApp.factory('customerfactory', function ($http) {
+
+            customerfactory = {};
+            customerfactory.getCustomers = function () {
+                return [{ name: 'another cus', country: 'another usa' }, { name: 'another mexico', country: 'another uk' }];
+            };
+
+            customerfactory.getWebCustomers = function () {
+                return $http.get('Home/GetCustomers');
+            };
+
+
+            return customerfactory;
+        });
+
+
+        myApp.config(function ($routeProvider, $logProvider)
+        {
+            $routeProvider
+                .when('/contactng',
+                    {
+                        controller: 'CustomerController',
+                        templateUrl: 'Home/Contact'
+                })
+                .when('/aboutng',
+                {
+                    controller: 'CustomerController',
+                    templateUrl: 'Home/About'
+                })
+
+                .when('/workarea',
+                {
+                    controller: 'CustomerController',
+                    templateUrl: 'Home/WorkArea'
+                })
+                .when('/login',
+                {
+                    controller: 'LoginController',
+                    templateUrl: 'Home/Login'
+                })
+                .when('/dashboard',
+                {
+                    controller: 'CustomerController',
+                    templateUrl: 'Home/Dashboard'
+                })
+
+                .otherwise({ redirecTo: '/' });
+
+
+            $logProvider.debugEnabled(true);
+
+        });
+
+
+        //app.config(function ($logProvider) {
+        //    $logProvider.debugEnabled(true);
+        //});
+
+        myApp.service("myService", function () {
+
+            this.DoubleTheAmount = function (a) {
+                return a * 2;
+            };
+        });
+
+
+        myApp.filter("ndcformat", function () {
+
+            var something = function (input, base)
+            {
+                
+                return input + "NDC" + base;
+            }
+            return something;
+        });
+
+        myApp.directive("myDir", function () {
+
+
+            function linkFunction($scope, elem, attrs)
+            {
+                $scope.name = "Hello worldsdfsdf";
+                $scope.changename = function (newName) {
+                    console.log('change called');
+                    $scope.name = newName;
+                    $scope.name = $scope.contprop;
+                    console.log($scope.contprop);
+                }
+
+               // elem.bind('click', function () {
+                   // console.log(elem[0].innerText);
+                   // alert(elem[0].innerText);
+                //});
+            }
+
+            var directive = {
+                template: 'Current text is {{name}}  <button type="button" ng-click="changename(\'{{conp}}\')">  Change this </button>', restrict: "AE",
+                link: linkFunction, scope: true,
+            };
+           
+
+            return directive;
+        });
+
+        myApp.controller("CustomerController", function ($scope, customerfactory, $log, $rootScope, myService) {
+
+            $scope.title = "Hello";
+            $log.debug('TEST Log');
+
+            $scope.Multiply = function (a) {
+                $scope.doubledValue = myService.DoubleTheAmount(a);
+            };
+                
+
+            $scope.customers = [{ name: 'cus1', country: 'usa' }, { name: 'mexico', country: 'uk' }];
+
+            $scope.anothercustomers = customerfactory.getCustomers();
+
+            console.log('Getting  Webcustomers');
+
+            customerfactory.getWebCustomers().then(function (response)
+            {
+                console.log('Got Webcustomers');
+                console.log(response.data.customers);
+                $scope.webcustomers = response.data.customers;
+            },
+            function (error)
+            {
+                $scope.status = 'Unable to load customer data: ' + error.message;
+            });
+
+           
+
+            $scope.addCustomer = function () {
+                $scope.customers.push({ name: $scope.newCustomer.name, country: $scope.newCustomer.country });
+                $rootScope.$broadcast('SOME_TAG', 'your value');
+                $rootScope.showBanner = true;
+            };
+
+        });
+
+
+        myApp.controller('LoginController', function ($scope, $location, $rootScope) {
+
+            $scope.showBanner = $rootScope.showBanner;
+            $scope.contprop = "contprop sdf f";
+
+            $scope.submit = function () {
+                if ($scope.username == "admin" && $scope.password == "admin")
+                {
+                   // consol.log('login');
+
+                    $location.path('/dashboard');                                                   
+                }
+            };
+
+            $scope.$on('SOME_TAG', function (response) {
+                console.log('LoginController : ' + response);
+            })
+
+
+        });
+
+
+    </script>
+   
+        
+
+</head>
+
+<body ng-app="myApp">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                    <li>@Html.ActionLink("About", "About", "Home")</li>
+                    <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+
+       
+
+        @RenderBody()
+        <hr />
+      
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

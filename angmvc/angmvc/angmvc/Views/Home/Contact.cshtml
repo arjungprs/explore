@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = "Contact";
+}
+<h2>@ViewBag.Title.</h2>
+
+
+<div ng-repeat="cust in webcustomers | orderBy : 'name' ">
+    <div>
+        {{cust.title | uppercase}}   {{cust.country | lowercase}}
+    </div>
+    <br />
+</div>
+
+
